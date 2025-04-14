@@ -1,0 +1,73 @@
+name: Push-to-IDP
+run-name: ${{ github.actor }} is deploying new version to the IDP Stack
+
+# Trigger deployment only on push to master branch
+on:
+  workflow_dispatch:
+   inputs:
+    environment:
+     type: choice
+     description: 'Input the environment you want to deploy'
+     options: 
+        - dev
+        - qa
+        - staging 
+        - prod
+     required: true
+
+env:
+  ENVIRONMENT: ${{ github.event.inputs.environment }} 
+  PREFIX: ${{ secrets.ITBEM_POSCHECK_AF_PREFIX }}
+  AWS_DEFAULT_REGION: ${{ secrets.ITBEM_POSCHECK_AF_AWS_DEFAULT_REGION }}
+  ACCOUNT_ID: ${{ secrets.ITBEM_POSCHECK_AF_AWS_ACCOUNT_ID }}
+  DOMAIN: ${{ secrets.ITBEM_POSCHECK_AF_DOMAIN }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+
+jobs:
+  Deploy:
+    runs-on: self-hosted
+    steps:
+      - id: AWSAccessSecretKey
+        run: export SECRETKEY=${{ format('ITBEM_POSCHECK_AF_AWS_SECRET_ACCESS_KEY_{0}', github.event.inputs.environment) }} && echo "::set-output name=AWSAccessSecretKeyValue::${SECRETKEY^^}"
+      - id: AWSAccessIdKey
+        run: export IDKEY=${{ format('ITBEM_POSCHECK_AF_AWS_ACCESS_KEY_ID_{0}', github.event.inputs.environment) }} && echo "::set-output name=AWSAccessIdKeyValue::${IDKEY^^}"
+      - id: RootUserPassword
+        run: export ROOTUSERPASSWORD=${{ format('ITBEM_POSCHECK_AF_ROOT_USER_PASSWORD_{0}', github.event.inputs.environment) }} && echo "::set-output name=RootUserPasswordValue::${ROOTUSERPASSWORD^^}"
+      - uses: actions/checkout@v3
+
+      - name: Cache NPM dependencies
+        uses: actions/cache@v3
+        with:
+         path: ~/.npm
+         key: npm-${{ hashFiles('package-lock.json') }}
+         restore-keys: npm-
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: |
+             npm ci --ignore-scripts
+             apt-get install -y sudo build-essential build-essential make curl git bash python3 tar docker
+             npm install -g typescript
+             python3 -m pip install aws-cdk-lib
+             npm install @aws-cdk/aws-lambda-nodejs
+             npm install --save-dev esbuild
+             npm install -g aws-cdk
+
+      - name: Configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets[steps.AWSAccessIdKey.outputs.AWSAccessIdKeyValue] }}
+          aws-secret-access-key: ${{ secrets[steps.AWSAccessSecretKey.outputs.AWSAccessSecretKeyValue] }}
+          role-to-assume: arn:aws:iam::${{ secrets.ITBEM_POSCHECK_AF_AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ACCOUNT_ROLE }}
+          role-session-name: samplerolesession
+          role-duration-seconds: 1200
+          aws-region: ${{ secrets.ITBEM_POSCHECK_AF_AWS_DEFAULT_REGION }}
+
+      - name: Deploy Idp
+        run: |
+            make $ENVIRONMENT idp deploy $PREFIX $DOMAIN $AWS_DEFAULT_REGION $ACCOUNT_ID ${{ secrets[steps.RootUserPassword.outputs.RootUserPasswordValue] }} $GOOGLE_CLIENT_ID
