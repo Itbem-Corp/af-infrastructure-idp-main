@@ -1,4 +1,4 @@
-name: Push-to-IDP
+name: PosCheck-Push-to-IDP
 run-name: ${{ github.actor }} is deploying new version to the IDP Stack
 
 # Trigger deployment only on push to master branch
