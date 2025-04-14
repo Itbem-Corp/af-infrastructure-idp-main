@@ -51,7 +51,8 @@ jobs:
           aws-access-key-id: ${{ secrets[steps.AWSAccessIdKey.outputs.AWSAccessIdKeyValue] }}
           aws-secret-access-key: ${{ secrets[steps.AWSAccessSecretKey.outputs.AWSAccessSecretKeyValue] }}
           role-to-assume: arn:aws:iam::${{ secrets.ITBEM_POSCHECK_AF_AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ACCOUNT_ROLE }}
-          role-session-name: bootstraprolesession
+          role-session-name: samplerolesession
+          role-duration-seconds: 1200
           aws-region: ${{ secrets.ITBEM_POSCHECK_AF_AWS_DEFAULT_REGION }}
 
       - name: CDK Bootstrap
