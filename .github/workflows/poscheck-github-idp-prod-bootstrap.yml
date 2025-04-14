@@ -67,4 +67,5 @@ jobs:
 
       - name: CDK Bootstrap
         run: |
+          cd af-infrastructure-idp-main
           npx cdk bootstrap aws://$ACCOUNT_ID/$AWS_DEFAULT_REGION
