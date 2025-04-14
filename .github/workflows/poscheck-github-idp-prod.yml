@@ -29,11 +29,17 @@ jobs:
     environment: ${{ github.event.inputs.environment }}
     steps:
       - id: AWSAccessSecretKey
-        run: export SECRETKEY=${{ format('ITBEM_POSCHECK_AF_AWS_SECRET_ACCESS_KEY_{0}', github.event.inputs.environment) }} && echo "::set-output name=AWSAccessSecretKeyValue::${SECRETKEY^^}"
+        run: |
+             SECRETKEY=$(echo "ITBEM_POSCHECK_AF_AWS_SECRET_ACCESS_KEY_${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
+             echo "AWSAccessSecretKeyValue=$SECRETKEY" >> $GITHUB_OUTPUT
       - id: AWSAccessIdKey
-        run: export IDKEY=${{ format('ITBEM_POSCHECK_AF_AWS_ACCESS_KEY_ID_{0}', github.event.inputs.environment) }} && echo "::set-output name=AWSAccessIdKeyValue::${IDKEY^^}"
+        run: |
+             IDKEY=$(echo "ITBEM_POSCHECK_AF_AWS_ACCESS_KEY_ID_${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
+             echo "AWSAccessIdKeyValue=$IDKEY" >> $GITHUB_OUTPUT
       - id: RootUserPassword
-        run: export ROOTUSERPASSWORD=${{ format('ITBEM_POSCHECK_AF_ROOT_USER_PASSWORD_{0}', github.event.inputs.environment) }} && echo "::set-output name=RootUserPasswordValue::${ROOTUSERPASSWORD^^}"
+        run: |
+             ROOTUSERPASSWORD=$(echo "ITBEM_POSCHECK_AF_ROOT_USER_PASSWORD_${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
+             echo "RootUserPasswordValue=$ROOTUSERPASSWORD" >> $GITHUB_OUTPUT
       - uses: actions/checkout@v3
 
       - name: Cache NPM dependencies
