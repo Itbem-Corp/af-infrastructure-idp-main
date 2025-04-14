@@ -26,6 +26,7 @@ env:
 jobs:
   Deploy:
     runs-on: ubuntu-latest
+    environment: $ENVIRONMENT
     steps:
       - id: AWSAccessSecretKey
         run: export SECRETKEY=${{ format('ITBEM_POSCHECK_AF_AWS_SECRET_ACCESS_KEY_{0}', github.event.inputs.environment) }} && echo "::set-output name=AWSAccessSecretKeyValue::${SECRETKEY^^}"
