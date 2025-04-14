@@ -23,7 +23,7 @@ export class IdP extends Construct {
     const userPoolName = `${environment.projectPrefixPlatform}-${environment.projectEnvironment}`;
     this.AWS_REGION = environment.aws_region;
 
-    const oidcProviderArns = getOidcProviderArns(this);
+    // const oidcProviderArns = getOidcProviderArns(this);
 
     /*
      const CustomMessagesFn = new lambda.Function(this, 'CustomMessagesFn', {
