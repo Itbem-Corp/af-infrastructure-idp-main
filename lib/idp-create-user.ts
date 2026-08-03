@@ -53,7 +53,7 @@ export class IdPCreateUser extends Construct {
           },
         },
         policy: AwsCustomResourcePolicy.fromSdkCalls({
-          resources: AwsCustomResourcePolicy.ANY_RESOURCE,
+          resources: [props.userPool.userPoolArn],
         }),
         installLatestAwsSdk: true,
       }
@@ -79,7 +79,7 @@ export class IdPCreateUser extends Construct {
           ),
         },
         policy: AwsCustomResourcePolicy.fromSdkCalls({
-          resources: AwsCustomResourcePolicy.ANY_RESOURCE,
+          resources: [props.userPool.userPoolArn],
         }),
         installLatestAwsSdk: true,
       }

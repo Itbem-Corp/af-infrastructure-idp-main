@@ -1,17 +1,23 @@
-// import * as cdk from 'aws-cdk-lib';
-// import { Template } from 'aws-cdk-lib/assertions';
-// import * as CdkTypescriptIdp from '../lib/cdk-typescript-idp-stack';
+import * as cdk from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
 
-// example test. To run these tests, uncomment this file along with the
-// example resource in lib/cdk-typescript-idp-stack.ts
-test('SQS Queue Created', () => {
-//   const app = new cdk.App();
-//     // WHEN
-//   const stack = new CdkTypescriptIdp.CdkTypescriptIdpStack(app, 'MyTestStack');
-//     // THEN
-//   const template = Template.fromStack(stack);
+beforeAll(() => {
+  process.env.PROJECT_ENVIRONMENT = 'qa';
+  process.env.PROJECT_PREFIX = 'validation';
+  process.env.PROJECT_DOMAIN = 'example.invalid';
+  process.env.ROOT_USER_PASSWORD = 'ValidationPassword-NotASecret-123!';
+});
 
-//   template.hasResourceProperties('AWS::SQS::Queue', {
-//     VisibilityTimeout: 300
-//   });
+test('Cognito custom-resource permissions are scoped to the user pool', () => {
+  const { CdkIdpStack } = require('../lib/cdk-idp-stack') as typeof import('../lib/cdk-idp-stack');
+  const template = Template.fromStack(new CdkIdpStack(new cdk.App(), 'IdpLeastPrivilegeTest'));
+  const policyDocuments = Object.values(template.findResources('AWS::IAM::Policy'))
+    .map((resource: any) => JSON.stringify(resource.Properties.PolicyDocument))
+    .filter((document) => document.includes('cognito-idp:AdminCreateUser') || document.includes('cognito-idp:AdminSetUserPassword'));
+
+  expect(policyDocuments).toHaveLength(2);
+  for (const document of policyDocuments) {
+    expect(document).not.toContain('"Resource":"*"');
+    expect(document).toContain('Fn::GetAtt');
+  }
 });
