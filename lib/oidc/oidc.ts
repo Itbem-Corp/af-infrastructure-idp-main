@@ -1,7 +1,7 @@
 import { Construct } from 'constructs';
-import { createGoogleProvider } from '../providers/google';
+import { createGoogleProvider } from './google/google';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import environment from '../config';
+import environment from '../../config';
 
 export function getOidcProviderArns(scope: Construct): string[] {
     const arns: string[] = [];

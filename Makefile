@@ -75,11 +75,12 @@ $(eval EMAIL:=$(PROJECT_EMAIL))
 $(eval SES_ARN:=$(PROJECT_SES_ARN))
 
 clean:
-	rm -fR node_modules    
-	npm install
-deploy: clean
+	rm -rf cdk.out
+deploy:
+	npm run build
 	npx cdk synth --region $(AWS_DEFAULT_REGION) --require-approval never    
 	npx cdk deploy --region $(AWS_DEFAULT_REGION) --require-approval never
-deploy-local: clean
-	cdk synth --region $(AWS_DEFAULT_REGION) --profile $(PROJECT_PROFILE)    
-	cdk deploy --region $(AWS_DEFAULT_REGION) --profile $(PROJECT_PROFILE)
+deploy-local:
+	npm run build
+	npx cdk synth --region $(AWS_DEFAULT_REGION) --profile $(PROJECT_PROFILE)
+	npx cdk deploy --region $(AWS_DEFAULT_REGION) --profile $(PROJECT_PROFILE)
