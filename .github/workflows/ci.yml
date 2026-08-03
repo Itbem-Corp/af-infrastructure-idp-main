@@ -1,0 +1,37 @@
+name: Validate IDP infrastructure
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.23.1
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm test
+      - run: npm run audit:production
+      - name: Synthesize with non-production configuration
+        env:
+          PROJECT_NAME: validation
+          PROJECT_ENVIRONMENT: qa
+          PROJECT_PREFIX: validation
+          CDK_DEFAULT_ACCOUNT: '000000000000'
+          CDK_DEFAULT_REGION: us-east-2
+          PROJECT_DOMAIN: example.invalid
+          ROOT_USER_PASSWORD: ValidationPassword-NotASecret-123!
+          GOOGLE_OAUTH_CLIENT_ID: validation-client
+        run: npx cdk synth --quiet

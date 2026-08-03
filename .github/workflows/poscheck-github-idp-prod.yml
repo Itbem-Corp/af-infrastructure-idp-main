@@ -27,6 +27,8 @@ jobs:
   Deploy:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
+    permissions:
+      contents: read
     steps:
       - id: AWSAccessSecretKey
         run: |
@@ -40,33 +42,21 @@ jobs:
         run: |
              ROOTUSERPASSWORD=$(echo "ITBEM_POSCHECK_AF_ROOT_USER_PASSWORD_${{ github.event.inputs.environment }}" | tr '[:lower:]' '[:upper:]')
              echo "RootUserPasswordValue=$ROOTUSERPASSWORD" >> $GITHUB_OUTPUT
-      - uses: actions/checkout@v3
-
-      - name: Cache NPM dependencies
-        uses: actions/cache@v3
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
-         path: ~/.npm
-         key: npm-${{ hashFiles('package-lock.json') }}
-         restore-keys: npm-
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: 20
+          node-version: 22.23.1
+          cache: npm
 
       - name: Install Dependencies
-        if: steps.cache.outputs.cache-hit == 'true'
-        run: |
-             npm ci --ignore-scripts
-             apt-get install -y sudo build-essential build-essential make curl git bash python3 tar docker
-             npm install -g typescript
-             python3 -m pip install aws-cdk-lib
-             npm install @aws-cdk/aws-lambda-nodejs
-             npm install --save-dev esbuild
-             npm install -g aws-cdk
+        run: npm ci --ignore-scripts
 
       - name: Configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v5
         with:
           aws-access-key-id: ${{ secrets[steps.AWSAccessIdKey.outputs.AWSAccessIdKeyValue] }}
           aws-secret-access-key: ${{ secrets[steps.AWSAccessSecretKey.outputs.AWSAccessSecretKeyValue] }}
