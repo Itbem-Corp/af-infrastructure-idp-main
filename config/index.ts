@@ -14,7 +14,6 @@ export interface IdpEnvironment {
     projectDomain: string;
     projectEmailDomain: string;
     environmentUrl: string;
-    rootUserPassword: string;
     googleClientId: string;
 }
 
@@ -31,7 +30,6 @@ const envs: IdpEnvironment = {
     projectDomain: getDomain(process.env.PROJECT_ENVIRONMENT ?? 'qa'),
     projectEmailDomain: process.env.PROJECT_EMAIL_DOMAIN ?? process.env.PROJECT_DOMAIN ?? '',
     environmentUrl: getEnvironmentUrl(process.env.PROJECT_ENVIRONMENT ?? '', process.env.PROJECT_DOMAIN ?? ''),
-    rootUserPassword: process.env.ROOT_USER_PASSWORD ?? '',
     googleClientId: process.env.GOOGLE_OAUTH_CLIENT_ID ?? '',
 };
 
@@ -43,7 +41,6 @@ export function validateDeploymentEnvironment(environment: IdpEnvironment): void
         ['CDK_DEFAULT_REGION', environment.aws_region],
         ['PROJECT_DOMAIN', process.env.PROJECT_DOMAIN],
         ['PROJECT_EMAIL_DOMAIN', environment.projectEmailDomain],
-        ['ROOT_USER_PASSWORD', environment.rootUserPassword],
     ].filter(([, value]) => !value).map(([name]) => name);
 
     if (missing.length > 0) {
@@ -54,9 +51,6 @@ export function validateDeploymentEnvironment(environment: IdpEnvironment): void
         throw new Error('CDK_DEFAULT_ACCOUNT must be a 12-digit AWS account ID.');
     }
 
-    if (environment.rootUserPassword.length < 8) {
-        throw new Error('ROOT_USER_PASSWORD must contain at least 8 characters.');
-    }
 }
 
 export default envs;

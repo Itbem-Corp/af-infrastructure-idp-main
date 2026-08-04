@@ -32,6 +32,5 @@ jobs:
           CDK_DEFAULT_ACCOUNT: '000000000000'
           CDK_DEFAULT_REGION: us-east-2
           PROJECT_DOMAIN: example.invalid
-          ROOT_USER_PASSWORD: ValidationPassword-NotASecret-123!
           GOOGLE_OAUTH_CLIENT_ID: validation-client
         run: npx cdk synth --quiet

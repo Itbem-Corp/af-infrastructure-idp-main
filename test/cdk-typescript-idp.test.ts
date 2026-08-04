@@ -6,7 +6,6 @@ beforeAll(() => {
   process.env.PROJECT_ENVIRONMENT = 'qa';
   process.env.PROJECT_PREFIX = 'validation';
   process.env.PROJECT_DOMAIN = 'example.invalid';
-  process.env.ROOT_USER_PASSWORD = 'ValidationPassword-NotASecret-123!';
 });
 
 test('Cognito custom-resource permissions are scoped to the user pool', () => {
@@ -28,6 +27,13 @@ test('Cognito custom-resource permissions are scoped to the user pool', () => {
   expect(createRequests).toHaveLength(1);
   expect(createRequests[0]).toContain('admin@example.invalid');
   expect(createRequests[0]).not.toContain('admin@qa');
+  expect(createRequests[0]).toContain('RootUserPassword');
+  expect(createRequests[0]).not.toContain('ValidationPassword-NotASecret-123!');
+
+  template.hasParameter('RootUserPassword', {
+    NoEcho: true,
+    MinLength: 8,
+  });
 
   template.hasResourceProperties('Custom::AWS', {
     InstallLatestAwsSdk: false,
@@ -48,7 +54,6 @@ test('deployment configuration rejects incomplete or invalid AWS targets', () =>
     projectDomain: 'qa',
     projectEmailDomain: 'qa',
     environmentUrl: 'https://qa.example.invalid/',
-    rootUserPassword: 'ValidationPassword-NotASecret-123!',
     googleClientId: '',
   };
 

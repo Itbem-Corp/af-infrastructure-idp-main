@@ -16,13 +16,14 @@ password.
 | `PROJECT_PREFIX` | Stable product prefix used in resource names. |
 | `PROJECT_DOMAIN` | Base domain used for callback URLs. |
 | `PROJECT_EMAIL_DOMAIN` | Administrator email domain; defaults to `PROJECT_DOMAIN`. |
-| `ROOT_USER_PASSWORD` | Initial administrator password (minimum eight characters). |
+| `ROOT_USER_PASSWORD` | Initial administrator password (minimum eight characters), passed only as a no-echo CloudFormation parameter at deployment time. |
 | `CDK_DEFAULT_ACCOUNT` | Target 12-digit AWS account ID. |
 | `CDK_DEFAULT_REGION` | Target AWS region. |
 
 `GOOGLE_OAUTH_CLIENT_ID` is optional and reserved for the OIDC provider integration.
 Never commit real credentials or passwords; configure them through the deployment
-environment or GitHub/AWS secrets.
+environment or GitHub/AWS secrets. The production workflow exposes the bootstrap
+password only as an environment variable to `make`, never as a command-line argument.
 
 ## Local workflow
 

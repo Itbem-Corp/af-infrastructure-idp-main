@@ -6,6 +6,13 @@ import { IdP } from "./idp";
 export class CdkIdpStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-    new IdP(this, "IDP");
+    const rootUserPassword = new cdk.CfnParameter(this, 'RootUserPassword', {
+      type: 'String',
+      noEcho: true,
+      minLength: 8,
+      description: 'Initial password for the bootstrap Cognito administrator.',
+    });
+
+    new IdP(this, 'IDP', { rootUserPassword: rootUserPassword.valueAsString });
   }
 }

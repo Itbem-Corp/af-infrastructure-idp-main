@@ -18,7 +18,7 @@ export class IdP extends Construct {
   password: any;
   data: any;
   poolid: any;
-  constructor(scope: core.Stack, id: string) {
+  constructor(scope: core.Stack, id: string, props: { rootUserPassword: string }) {
     super(scope, id);
     const userPoolName = `${environment.projectPrefixPlatform}-${environment.projectEnvironment}`;
     this.AWS_REGION = environment.aws_region;
@@ -117,7 +117,7 @@ export class IdP extends Construct {
     new IdPCreateUser(this, `userAdmin@${environment.projectEmailDomain}`, {
       userPool: userPool,
       username: `admin@${environment.projectEmailDomain}`,
-      password: `${environment.rootUserPassword}`,
+      password: props.rootUserPassword,
       groupName: 'itbem_admin'
     });
 
