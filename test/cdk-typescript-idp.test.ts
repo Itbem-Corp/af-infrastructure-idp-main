@@ -22,6 +22,13 @@ test('Cognito custom-resource permissions are scoped to the user pool', () => {
     expect(document).toContain('Fn::GetAtt');
   }
 
+  const createRequests = Object.values(template.findResources('Custom::AWS'))
+    .map((resource: any) => JSON.stringify(resource.Properties.Create))
+    .filter((request) => request.includes('adminCreateUser'));
+  expect(createRequests).toHaveLength(1);
+  expect(createRequests[0]).toContain('admin@example.invalid');
+  expect(createRequests[0]).not.toContain('admin@qa');
+
   template.hasResourceProperties('Custom::AWS', {
     InstallLatestAwsSdk: false,
   });

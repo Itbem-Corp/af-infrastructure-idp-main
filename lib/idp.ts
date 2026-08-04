@@ -114,9 +114,9 @@ export class IdP extends Construct {
       accessTokenValidity: Duration.minutes(60) 
     });
 
-    new IdPCreateUser(this, `userAdmin@${environment.projectDomain}`, {
+    new IdPCreateUser(this, `userAdmin@${environment.projectEmailDomain}`, {
       userPool: userPool,
-      username: `admin@${environment.projectDomain}`,
+      username: `admin@${environment.projectEmailDomain}`,
       password: `${environment.rootUserPassword}`,
       groupName: 'itbem_admin'
     });
