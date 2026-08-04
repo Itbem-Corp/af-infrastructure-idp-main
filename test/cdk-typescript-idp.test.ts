@@ -1,11 +1,11 @@
 import * as cdk from 'aws-cdk-lib';
 import { Template } from 'aws-cdk-lib/assertions';
+import type { IdpEnvironment } from '../config';
 
 beforeAll(() => {
   process.env.PROJECT_ENVIRONMENT = 'qa';
   process.env.PROJECT_PREFIX = 'validation';
   process.env.PROJECT_DOMAIN = 'example.invalid';
-  process.env.ROOT_USER_PASSWORD = 'ValidationPassword-NotASecret-123!';
 });
 
 test('Cognito custom-resource permissions are scoped to the user pool', () => {
@@ -20,4 +20,45 @@ test('Cognito custom-resource permissions are scoped to the user pool', () => {
     expect(document).not.toContain('"Resource":"*"');
     expect(document).toContain('Fn::GetAtt');
   }
+
+  const createRequests = Object.values(template.findResources('Custom::AWS'))
+    .map((resource: any) => JSON.stringify(resource.Properties.Create))
+    .filter((request) => request.includes('adminCreateUser'));
+  expect(createRequests).toHaveLength(1);
+  expect(createRequests[0]).toContain('admin@example.invalid');
+  expect(createRequests[0]).not.toContain('admin@qa');
+  expect(createRequests[0]).toContain('RootUserPassword');
+  expect(createRequests[0]).not.toContain('ValidationPassword-NotASecret-123!');
+
+  template.hasParameter('RootUserPassword', {
+    NoEcho: true,
+    MinLength: 8,
+  });
+
+  template.hasResourceProperties('Custom::AWS', {
+    InstallLatestAwsSdk: false,
+  });
+});
+
+test('deployment configuration rejects incomplete or invalid AWS targets', () => {
+  const { validateDeploymentEnvironment } = require('../config') as typeof import('../config');
+  const environment: IdpEnvironment = {
+    projectName: 'validation',
+    projectEnvironment: 'qa',
+    projectPrefixPlatform: 'validation',
+    aws_account: '000000000000',
+    aws_region: 'us-east-2',
+    projectSESARN: '',
+    projectEMAIL: '',
+    projectSUBFIXEMAIL: '',
+    projectDomain: 'qa',
+    projectEmailDomain: 'qa',
+    environmentUrl: 'https://qa.example.invalid/',
+    googleClientId: '',
+  };
+
+  expect(() => validateDeploymentEnvironment(environment)).not.toThrow();
+  expect(() => validateDeploymentEnvironment({ ...environment, aws_account: 'not-an-account' })).toThrow(
+    'CDK_DEFAULT_ACCOUNT must be a 12-digit AWS account ID.',
+  );
 });

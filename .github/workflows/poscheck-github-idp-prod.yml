@@ -66,5 +66,8 @@ jobs:
           aws-region: ${{ secrets.ITBEM_POSCHECK_AF_AWS_DEFAULT_REGION }}
 
       - name: Deploy Idp
+        env:
+          ROOT_USER_PASSWORD: ${{ secrets[steps.RootUserPassword.outputs.RootUserPasswordValue] }}
+          GOOGLE_OAUTH_CLIENT_ID: ${{ env.GOOGLE_CLIENT_ID }}
         run: |
-            make $ENVIRONMENT idp deploy $PREFIX $DOMAIN $AWS_DEFAULT_REGION $ACCOUNT_ID ${{ secrets[steps.RootUserPassword.outputs.RootUserPasswordValue] }} $GOOGLE_CLIENT_ID
+            make $ENVIRONMENT idp deploy $PREFIX $DOMAIN $AWS_DEFAULT_REGION $ACCOUNT_ID

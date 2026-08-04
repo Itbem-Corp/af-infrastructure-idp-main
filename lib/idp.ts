@@ -18,7 +18,7 @@ export class IdP extends Construct {
   password: any;
   data: any;
   poolid: any;
-  constructor(scope: core.Stack, id: string) {
+  constructor(scope: core.Stack, id: string, props: { rootUserPassword: string }) {
     super(scope, id);
     const userPoolName = `${environment.projectPrefixPlatform}-${environment.projectEnvironment}`;
     this.AWS_REGION = environment.aws_region;
@@ -67,7 +67,7 @@ export class IdP extends Construct {
         },
     });
 
-    const cfnSystemAdminPoolGroup = new cognito.CfnUserPoolGroup(
+    new cognito.CfnUserPoolGroup(
       this,
       "MyCfnItbemAdminPoolGroup",
       {
@@ -114,11 +114,11 @@ export class IdP extends Construct {
       accessTokenValidity: Duration.minutes(60) 
     });
 
-    new IdPCreateUser(this, `userAdmin@${environment.projectDomain}`, {
+    new IdPCreateUser(this, `userAdmin@${environment.projectEmailDomain}`, {
       userPool: userPool,
-      username: `admin@${environment.projectDomain}`,
-      password: `${environment.rootUserPassword}`,
-      groupName: cfnSystemAdminPoolGroup.groupName
+      username: `admin@${environment.projectEmailDomain}`,
+      password: props.rootUserPassword,
+      groupName: 'itbem_admin'
     });
 
   }

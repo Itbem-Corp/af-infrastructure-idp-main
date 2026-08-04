@@ -19,7 +19,7 @@ export class IdPCreateUser extends Construct {
       userPool: UserPool;
       username: string;
       password: string;
-      groupName: any;
+      groupName: string;
     }
   ) {
     super(scope, id);
@@ -55,7 +55,9 @@ export class IdPCreateUser extends Construct {
         policy: AwsCustomResourcePolicy.fromSdkCalls({
           resources: [props.userPool.userPoolArn],
         }),
-        installLatestAwsSdk: true,
+        // Cognito operations used here are present in the runtime SDK. Avoid a mutable
+        // package installation during every deployment (roughly one minute slower).
+        installLatestAwsSdk: false,
       }
     );
 
@@ -81,7 +83,7 @@ export class IdPCreateUser extends Construct {
         policy: AwsCustomResourcePolicy.fromSdkCalls({
           resources: [props.userPool.userPoolArn],
         }),
-        installLatestAwsSdk: true,
+        installLatestAwsSdk: false,
       }
     );
     adminSetUserPassword.node.addDependency(adminCreateUser);

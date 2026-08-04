@@ -47,8 +47,8 @@ export LOCAL_DOMAIN=$(arg5)
 export REGION_ACCOUNT=$(arg6)
 export AWS_ACCOUNT=$(arg7)
 export PROJECT_ENVIRONMENT=$(arg1)
-export ROOT_USER_PASSWORD=$(arg8)
-export GOOGLE_OAUTH_CLIENT_ID=$(arg9)
+export ROOT_USER_PASSWORD ?= $(arg8)
+export GOOGLE_OAUTH_CLIENT_ID ?= $(arg9)
 
 ifeq ($(PROJECT_ENVIRONMENT), prod)
 export PROJECT_DEPLOYMENT_PRODUCTION_TYPE=$(PROJECT_ENVIRONMENT)
@@ -59,14 +59,17 @@ export PROJECT_DEPLOYMENT_TYPE=$(arg3)
 endif
 
 export AWS_DEFAULT_REGION=$(REGION_ACCOUNT)
+export CDK_DEFAULT_ACCOUNT=$(AWS_ACCOUNT)
+export CDK_DEFAULT_REGION=$(AWS_DEFAULT_REGION)
 export SES_ARN=arn:aws:ses:$(AWS_DEFAULT_REGION):$(AWS_ACCOUNT):identity
 
-export PROJECT_DOMAIN=$(if $(PROJECT_DEPLOYMENT_TYPE),$(DOMAIN),$(LOCAL_DOMAIN))
+export PROJECT_DOMAIN=$(LOCAL_DOMAIN)
 export PROJECT_PREFIX_EMAIL=$(if $(PROJECT_DEPLOYMENT_PRODUCTION_TYPE),info,info-$(PROJECT_ENVIRONMENT))
 export PROJECT_SES_ARN=$(SES_ARN)/$(PROJECT_PREFIX_EMAIL)@$(PROJECT_DOMAIN)
 export PROJECT_EMAIL=$(PROJECT_PREFIX_EMAIL)@$(PROJECT_DOMAIN)
 export PROJECT_EMAIL_DOMAIN=$(PROJECT_DOMAIN)
 export PROJECT_PROFILE=$(PROJECT_PREFIX)-$(PROJECT_ENVIRONMENT)
+export STACK_NAME=Cdk$(PROJECT_PREFIX)-idp-$(PROJECT_ENVIRONMENT)Stack
 
 ## ************ Local Environment ************* ##
 
@@ -79,8 +82,8 @@ clean:
 deploy:
 	npm run build
 	npx cdk synth --region $(AWS_DEFAULT_REGION) --require-approval never    
-	npx cdk deploy --region $(AWS_DEFAULT_REGION) --require-approval never
+	npx cdk deploy $(STACK_NAME) --region $(AWS_DEFAULT_REGION) --require-approval never --parameters "$(STACK_NAME):RootUserPassword=$${ROOT_USER_PASSWORD}"
 deploy-local:
 	npm run build
 	npx cdk synth --region $(AWS_DEFAULT_REGION) --profile $(PROJECT_PROFILE)
-	npx cdk deploy --region $(AWS_DEFAULT_REGION) --profile $(PROJECT_PROFILE)
+	npx cdk deploy $(STACK_NAME) --region $(AWS_DEFAULT_REGION) --profile $(PROJECT_PROFILE) --parameters "$(STACK_NAME):RootUserPassword=$${ROOT_USER_PASSWORD}"
