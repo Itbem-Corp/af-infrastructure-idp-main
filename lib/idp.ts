@@ -67,7 +67,7 @@ export class IdP extends Construct {
         },
     });
 
-    const cfnSystemAdminPoolGroup = new cognito.CfnUserPoolGroup(
+    new cognito.CfnUserPoolGroup(
       this,
       "MyCfnItbemAdminPoolGroup",
       {
@@ -118,7 +118,7 @@ export class IdP extends Construct {
       userPool: userPool,
       username: `admin@${environment.projectDomain}`,
       password: `${environment.rootUserPassword}`,
-      groupName: cfnSystemAdminPoolGroup.groupName
+      groupName: 'itbem_admin'
     });
 
   }
